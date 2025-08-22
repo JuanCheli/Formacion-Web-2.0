@@ -224,43 +224,6 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
-  async function exportPNG() {
-    const svg = svgRef.current;
-    const serializer = new XMLSerializer();
-    const clone = svg.cloneNode(true);
-    clone.removeAttribute("width");
-    clone.removeAttribute("height");
-    const svgString = serializer.serializeToString(clone);
-    const img = new Image();
-    const svgBlob = new Blob([svgString], {
-      type: "image/svg+xml;charset=utf-8",
-    });
-    const url = URL.createObjectURL(svgBlob);
-    return new Promise((res, rej) => {
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = svg.clientWidth * 2;
-        canvas.height = svg.clientHeight * 2;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((b) => {
-          const a = document.createElement("a");
-          const url2 = URL.createObjectURL(b);
-          a.href = url2;
-          a.download = "formacion_usuarios_map_v2.png";
-          a.click();
-          URL.revokeObjectURL(url2);
-          URL.revokeObjectURL(url);
-          res();
-        });
-      };
-      img.onerror = (err) => rej(err);
-      img.src = url;
-    });
-  }
-
   // Context menu state
   const [contextNode, setContextNode] = useState(null);
   const [contextPos, setContextPos] = useState({ x: 0, y: 0 });
@@ -457,7 +420,7 @@ export default function App() {
         <div className="w-1/2 bg-slate-50 dark:bg-slate-800 rounded-xl shadow p-4 flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl font-bold">
-              Mapa conceptual interactivo — Mejorado
+              Mapa conceptual interactivo
             </h2>
             <div className="flex gap-2">
               <button
@@ -471,12 +434,6 @@ export default function App() {
                 className="px-3 py-1 rounded bg-indigo-600 text-white"
               >
                 Exportar SVG
-              </button>
-              <button
-                onClick={() => exportPNG()}
-                className="px-3 py-1 rounded bg-indigo-700 text-white"
-              >
-                Exportar PNG
               </button>
               <button
                 onClick={resetToDefault}
