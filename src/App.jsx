@@ -8,51 +8,6 @@ import React, { useState, useRef, useEffect } from "react";
 // - Mejoras menores en la UI para manejo de conexiones
 
 export default function App() {
-  const initialDocument = `# Formación de usuarios de la información mediante aplicaciones Web 2.0
-
-## Resumen
-
-La formación de usuarios de la información mediante aplicaciones Web 2.0 propone un marco pedagógico y operativo para capacitar a usuarios en la búsqueda, evaluación, gestión y uso ético de la información. Este programa integra herramientas colaborativas, contenidos didácticos y estrategias de evaluación para co-construir competencias informacionales.
-
-## Objetivos
-
-- **Desarrollar** habilidades para localizar y evaluar información en línea.
-- **Promover** el uso crítico y ético de recursos digitales.
-- **Implementar** competencias para gestionar y comunicar información mediante aplicaciones Web 2.0.
-
-## Metodología
-
-El programa se organiza en fases: diagnóstico, diseño curricular, producción de recursos, implementación y evaluación. Se emplean metodologías activas (aprendizaje basado en tareas, proyectos colaborativos y microlearning) y herramientas Web 2.0 que favorecen la colaboración y el acceso multiplataforma.
-
-## Contenidos principales
-
-1. Alfabetización informacional: conceptos básicos, tipos de fuentes, evaluación de la fiabilidad.
-2. Herramientas colaborativas: wikis, blogs, gestores bibliográficos, plataformas de curación de contenidos.
-3. Búsqueda avanzada: operadores, bases de datos académicas y metabuscadores.
-4. Gestión y organización: etiquetas, carpetas, entornos personales de aprendizaje (PLE).
-5. Comunicación y difusión: licencias, citación y buenas prácticas.
-
-## Evaluación
-
-Se recomienda combinar evaluación formativa (seguimiento continuo de tareas) y sumativa (proyectos finales). Indicadores: precisión en búsqueda, capacidad crítica para evaluar fuentes, calidad de productos colaborativos y cumplimiento de buenas prácticas éticas.
-
-## Alcances y limitaciones
-
-Las herramientas Web 2.0 amplían el acceso y la colaboración, pero requieren gestión de privacidad, planes de respaldo y adaptación a la infraestructura institucional.
-
-## Conclusiones y recomendaciones
-
-Se sugiere integrar la formación en la planificación institucional, ofrecer capacitación continua para docentes y estudiantes, y evaluar periódicamente la eficacia del programa mediante métricas claras.
-`;
-
-  const [documentText, setDocumentText] = useState(() => {
-    return localStorage.getItem("fu_formal_doc_v2") || initialDocument;
-  });
-
-  useEffect(() => {
-    localStorage.setItem("fu_formal_doc_v2", documentText);
-  }, [documentText]);
-
   // Mapa conceptual mejorado
   const defaultNodes = [
     { id: "n1", text: "TIC", x: 140, y: 80, type: "concept" },
@@ -254,20 +209,6 @@ Se sugiere integrar la formación en la planificación institucional, ofrecer ca
     );
   }
 
-  // Export functions
-  function exportJSON() {
-    const data = { document: documentText, nodes, connections };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "formacion_usuarios_mapa_v2.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
   function exportSVG() {
     const svg = svgRef.current.cloneNode(true);
     svg.removeAttribute("width");
@@ -344,93 +285,14 @@ Se sugiere integrar la formación en la planificación institucional, ofrecer ca
   // Apply viewport on mount
   useEffect(() => applyViewport(), []);
 
-  // Simple markdown-like formatter for preview
-  function escapeHtml(str) {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-  }
-
-  function markdownToHtml(md) {
-    const lines = md.split("\n");
-    let html = "";
-    let inList = false;
-    for (let raw of lines) {
-      const line = raw.trim();
-      if (line.startsWith("### ")) {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += `<h3>${escapeHtml(line.slice(4))}</h3>`;
-      } else if (line.startsWith("## ")) {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += `<h2>${escapeHtml(line.slice(3))}</h2>`;
-      } else if (line.startsWith("# ")) {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += `<h1>${escapeHtml(line.slice(2))}</h1>`;
-      } else if (line.startsWith("- ")) {
-        if (!inList) {
-          html += "<ul>";
-          inList = true;
-        }
-        html += `<li>${escapeHtml(line.slice(2)).replace(
-          /\*\*(.*?)\*\*/g,
-          "<strong>$1</strong>"
-        )}</li>`;
-      } else if (line.match(/^\d+\.\s/)) {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += `<p>${escapeHtml(line)}</p>`;
-      } else if (line === "") {
-        if (inList) {
-          html += "</ul>";
-          inList = false;
-        }
-        html += "<p></p>";
-      } else {
-        html += `<p>${escapeHtml(line).replace(
-          /\*\*(.*?)\*\*/g,
-          "<strong>$1</strong>"
-        )}</p>`;
-      }
-    }
-    if (inList) html += "</ul>";
-    return html;
-  }
-
   return (
     <div className="w-full h-screen p-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       <div className="flex gap-4 h-full">
         {/* Documento formal */}
         <div className="w-1/2 bg-slate-50 dark:bg-slate-800 rounded-xl shadow p-4 flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xl font-bold">Documento formalizado</h2>
-            <div className="flex gap-2">
-              <button
-                onClick={exportJSON}
-                className="px-3 py-1 rounded bg-blue-600 text-white"
-              >
-                Exportar JSON
-              </button>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(documentText);
-                }}
-                className="px-3 py-1 rounded bg-emerald-600 text-white"
-              >
-                Copiar
-              </button>
-            </div>
+          <div className="items-center justify-between mb-3">
+            <h2 className="text-3xl font-bold text-center text-indigo-600 dark:text-indigo-200">Documento formalizado</h2>
+            <div className="flex gap-2"></div>
           </div>
 
           {/* Preview (formateado) */}
@@ -438,34 +300,156 @@ Se sugiere integrar la formación en la planificación institucional, ofrecer ca
             className="mb-3 p-3 bg-white dark:bg-slate-900 rounded border overflow-auto"
             style={{ minHeight: 120 }}
           >
-            <div
-              dangerouslySetInnerHTML={{ __html: markdownToHtml(documentText) }}
-              style={{ lineHeight: 1.5 }}
-            />
-          </div>
+            <div style={{ lineHeight: 1.5 }}>
+              <>
+                <div className="w-full min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100 p-8 flex justify-center">
+                  <div className="max-w-4xl w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 space-y-8">
+                    <h2 className="text-3xl font-bold text-center text-indigo-600 dark:text-indigo-400">
+                      Formación de usuarios de la información mediante
+                      aplicaciones Web 2.0
+                    </h2>
 
-          {/* Editor: single scrollbar only (textarea tiene overflow) */}
-          <div
-            className="flex-1 p-0"
-            style={{ display: "flex", flexDirection: "column" }}
-          >
-            <textarea
-              value={documentText}
-              onChange={(e) => setDocumentText(e.target.value)}
-              className="w-full p-3 resize-none outline-none text-sm overflow-y-auto"
-              style={{
-                flex: 1,
-                minHeight: "200px", // asegura un alto inicial
-                borderRadius: 8,
-                border: "1px solid rgba(15,23,42,0.06)",
-                background: "transparent",
-              }}
-            />
-          </div>
+                    <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300 text-center">
+                      Este documento analiza cómo las <strong>TIC</strong> y las{" "}
+                      <strong>aplicaciones Web 2.0</strong> pueden apoyar la
+                      formación de usuarios en la gestión y uso de la
+                      información, especialmente en el ámbito educativo.
+                    </p>
 
-          <div className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-            Vista previa dinámica. Editá el texto abajo; el formato se actualiza
-            en tiempo real.
+                    {/* Importancia */}
+                    <section>
+                      <h3 className="text-2xl font-semibold text-indigo-500 mb-4">
+                        📌 Importancia de las TIC
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 marker:text-indigo-400">
+                        <li>
+                          Son parte esencial de la vida cotidiana (hogar,
+                          trabajo, educación).
+                        </li>
+                        <li>
+                          Impulsan la educación en línea, a distancia y la
+                          teleeducación.
+                        </li>
+                        <li>
+                          Exigen habilidades cognitivas, técnicas y
+                          actitudinales.
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Formación */}
+                    <section>
+                      <h3 className="text-2xl font-semibold text-indigo-500 mb-4">
+                        🎯 Formación de usuarios de la información
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 marker:text-indigo-400">
+                        <li>
+                          Busca dotar de competencias para acceder y usar
+                          información eficientemente.
+                        </li>
+                        <li>
+                          Implica intercambio de experiencias y aprendizajes
+                          continuos.
+                        </li>
+                        <li>
+                          Se adapta a comunidades con necesidades específicas.
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Programas */}
+                    <section>
+                      <h3 className="text-2xl font-semibold text-indigo-500 mb-4">
+                        📑 Programas de formación
+                      </h3>
+                      <p className="mb-3">
+                        Requieren planificación didáctica clara con objetivos
+                        definidos. Sus etapas son:
+                      </p>
+                      <ol className="list-decimal pl-6 space-y-1 marker:text-indigo-400">
+                        <li>Definición del problema.</li>
+                        <li>Análisis del entorno institucional.</li>
+                        <li>Diagnóstico de necesidades.</li>
+                        <li>Establecer objetivos.</li>
+                        <li>Elaborar contenidos.</li>
+                        <li>Seleccionar medios didácticos.</li>
+                        <li>Producir materiales.</li>
+                        <li>Implementar el programa.</li>
+                        <li>Evaluar (formativa y sumativa).</li>
+                      </ol>
+                    </section>
+
+                    {/* Aplicaciones */}
+                    <section>
+                      <h3 className="text-2xl font-semibold text-indigo-500 mb-4">
+                        🌐 Aplicaciones Web 2.0 y educación
+                      </h3>
+                      <p className="mb-3">
+                        Combinan <strong>tecnología</strong>,{" "}
+                        <strong>información</strong> y{" "}
+                        <strong>comunicación</strong>. Permiten crear, almacenar
+                        y transmitir información, fomentando la colaboración.
+                      </p>
+                      <ul className="list-disc pl-6 space-y-2 marker:text-indigo-400">
+                        <li>
+                          <strong>Tecnologías de información:</strong>{" "}
+                          computadoras, software, web, almacenamiento.
+                        </li>
+                        <li>
+                          <strong>Tecnologías de comunicación:</strong>{" "}
+                          internet, telefonía, televisión, radio.
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Ventajas */}
+                    <section>
+                      <h3 className="text-2xl font-semibold text-indigo-500 mb-4">
+                        ✅ Ventajas
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 marker:text-green-500">
+                        <li>Acceso global desde internet.</li>
+                        <li>Multiplataforma y multiplataforma.</li>
+                        <li>Actualización automática.</li>
+                        <li>Bajo requerimiento técnico.</li>
+                        <li>Colaboración remota y simultánea.</li>
+                      </ul>
+                    </section>
+
+                    {/* Limitaciones */}
+                    <section>
+                      <h3 className="text-2xl font-semibold text-indigo-500 mb-4">
+                        ⚠️ Limitaciones
+                      </h3>
+                      <ul className="list-disc pl-6 space-y-2 marker:text-red-500">
+                        <li>Posible acceso de terceros a la información.</li>
+                        <li>Cambios inesperados en condiciones de uso.</li>
+                        <li>
+                          Riesgo de pérdida de datos (copias de seguridad
+                          necesarias).
+                        </li>
+                      </ul>
+                    </section>
+
+                    {/* Conclusión */}
+                    <section className="bg-indigo-50 dark:bg-indigo-900/40 p-6 rounded-xl shadow-inner">
+                      <h3 className="text-2xl font-bold text-indigo-600 dark:text-indigo-300 mb-3">
+                        🔎 Conclusión
+                      </h3>
+                      <p className="leading-relaxed">
+                        La integración de <strong>aplicaciones Web 2.0</strong>{" "}
+                        en programas de formación mejora la{" "}
+                        <strong>gestión de la información</strong>, fomenta la{" "}
+                        <strong>colaboración</strong> y desarrolla{" "}
+                        <strong>competencias digitales</strong>. No obstante, se
+                        deben considerar riesgos de seguridad y dependencia
+                        tecnológica.
+                      </p>
+                    </section>
+                  </div>
+                </div>
+              </>
+            </div>
           </div>
         </div>
 
@@ -669,12 +653,13 @@ Se sugiere integrar la formación en la planificación institucional, ofrecer ca
             )}
 
             {/* Help / footer */}
-            <div className="dark:text-slate-400"
+            <div
+              className="dark:text-slate-400"
               style={{
                 position: "absolute",
                 bottom: 8,
                 left: 8,
-                fontSize: 12
+                fontSize: 12,
               }}
             >
               Arrastrá nodos, doble clic para editar, clic para
